@@ -17,6 +17,7 @@
           - gnupg-agent
           - software-properties-common
           - python3-pip
+          - libffi-dev
         state: present
 
     - name: Add docker's official GPG key
