@@ -4,4 +4,14 @@ if ! id -u web 2>/dev/hull; then
   useradd -M -u 1000 -s /usr/sbin/nologin -d /app web
 fi
 
+if [ -f /run/secrets/secrets ]; then
+  . /run/secrets/secrets
+fi
+
+if [ -f /run/secrets/secrets ]; then
+  awk -F'=' '{if ($1!="") {print $1}}' /run/secrets/secrets | while read -r VAR; do
+    unset "$VAR"
+  done
+fi
+
 exec sudo -E -u web "$@"

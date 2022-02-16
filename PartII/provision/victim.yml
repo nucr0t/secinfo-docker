@@ -27,7 +27,7 @@
 
     - name: Add docker's repository
       apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/debian stretch stable
+        repo: deb [arch=amd64] https://download.docker.com/linux/debian buster stable
         state: present
         update_cache: true
 
